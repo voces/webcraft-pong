@@ -86,7 +86,7 @@ app.state = {
 
 Object.defineProperty( app.state, "start", {
 	get: () => startTimeout && startTimeout.time,
-	set: time => startTimeout = startTimeout = app.setTimeout( start, time, true ),
+	set: time => startTimeout = time ? app.setTimeout( start, time, true ) : null,
 	enumerable: true
 } );
 
@@ -107,6 +107,8 @@ function randomAngle() {
 
 function reset() {
 
+	app.players.filter( player => player.status === "left" ).forEach( player => player.remove() );
+
 	if ( ! WebCraft.isBrowser ) return;
 
 	app.state.leftScore = app.state.rightScore = document.getElementById( "left-score" ).textContent = document.getElementById( "right-score" ).textContent = 0;
@@ -115,8 +117,10 @@ function reset() {
 
 function init() {
 
-	leftPaddle.owner = app.players[ 0 ];
-	rightPaddle.owner = app.players[ 1 ];
+	const players = app.players.filter( player => player.status === "here" );
+
+	leftPaddle.owner = players[ 0 ];
+	rightPaddle.owner = players[ 1 ];
 
 }
 
@@ -198,7 +202,7 @@ scoreRegion.addEventListener( "unitLeave", () => {
 
 app.addEventListener( "playerJoin", () => {
 
-	if ( ! WebCraft.isServer || app.players.length !== 2 ) return;
+	if ( ! WebCraft.isServer || app.players.filter( player => player.status === "here" ).length !== 2 ) return;
 
 	const event = { type: "start" };
 
@@ -218,17 +222,18 @@ app.addEventListener( "playerLeave", e => {
 
 	if ( e.player !== leftPaddle.owner && e.player !== rightPaddle.owner ) return;
 
-	startTimeout.clear();
+	if ( startTimeout ) startTimeout.clear();
 	startTimeout = undefined;
 
 	ball.x = ball.x;
 	ball.y = ball.y;
 
-	if ( app.players.length < 2 ) return;
+	if ( app.players.filter( player => player.status === "here" ).length < 2 ) return;
 
 	reset();
+	init();
 
-	startTimeout = app.setTimeout( () => ( init(), start() ), 1000 );
+	startTimeout = app.setTimeout( () => start(), 1000 );
 
 } );
 
