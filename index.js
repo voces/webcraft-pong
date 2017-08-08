@@ -158,7 +158,7 @@ bounceRegion.addEventListener( "unitLeave", () => {
 	if ( Math.abs( ball.y ) >= 6.5 - 1e-7 ) {
 
 		ball.facing = Math.PI * 2 - ball.facing;
-		ball.y = app.linearTween( { start: ball.y, rate: - ball.shadowProps.y.rate, duration: Infinity } );
+		ball.y = app.linearTween( { start: ball.y, rate: - ball._props.y.rate, duration: Infinity } );
 
 		return;
 
